@@ -6,14 +6,28 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: 'meteor88',
+    password: '',
     database: 'employees_db',
 });
 
-let employeeArr = [];
-let departmentArr = [];
-let roleArr = [];
-let managerArr = [];
+let employeeArr = [1];
+let departmentArr = [2];
+let roleArr = [3];
+let managerArr = [4];
+
+function Row(id, name, title, department, manager) {
+    this.id = id;
+    this.name = name;
+    this.title = title;
+    this.department = department;
+    this.manager = manager;
+}
+
+let test = new Row(employeeArr, roleArr, departmentArr, managerArr);
+
+console.table(test);
+
+
 
 
 const start = () => {
@@ -22,7 +36,7 @@ const start = () => {
             name: 'start',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View all employees', 'View all employees by department', 'View all employees by Manager', 'Add employee', 'Remove employee', 'Update employee role', 'Update employee manager'],
+            choices: ['View all employees', 'View all employees by department', 'View all employees by Manager', 'Add employee', 'Remove employee', 'View roles', 'Add role', 'Remove role', 'View managers', 'Add manager', 'Remove manager', 'View departments', 'Add department', 'Remove department', 'Update employee role', 'Update employee manager'],
         })
         .then((answer) => {
             if (answer.start === 'View all employees') {
@@ -32,7 +46,7 @@ const start = () => {
             } else if (answer.start === 'View all employees by Manager') {
                 employeesByManager();
             } else if (answer.start === 'Add employee') {
-                addEmployee();
+                addEmployeeFirstName();
             } else if (answer.start === 'Remove employee') {
                 removeEmployee();
             } else if (answer.start === 'Update employee role') {
@@ -41,10 +55,16 @@ const start = () => {
                 updateEmployeeManager();
             } else if (answer.start === 'View roles') {
                 viewRoles();
-            } else if (answer.start === 'Add roles') {
+            } else if (answer.start === 'Add role') {
                 addRole();
-            } else if (answer.start === 'Remove roles') {
+            } else if (answer.start === 'Remove role') {
                 removeRole();
+            } else if (answer.start === 'View managers') {
+                viewManagers();
+            } else if (answer.start === 'Add managers') {
+                addManager();
+            } else if (answer.start === 'Remove managers') {
+                removeManager();
             } else if (answer.start === 'View departments') {
                 viewDepartments();
             } else if (answer.start === 'Add department') {
@@ -58,66 +78,88 @@ const start = () => {
 };
 
 const viewAllEmployees = () => {
-    inquirer
-        .prompt({
-            name: 'viewAllEmployees',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.viewAllEmployees === '') {
-
-            } else if (answer.viewAllEmployees === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
+    let query = '';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('All Employees:', res);
+        inquirer
+            .prompt({
+                name: 'viewAllEmployees',
+                type: 'confirm',
+                message: 'Would you like to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.viewAllEmployees) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    });
+}
 const employeesByDeptartment = () => {
-    inquirer
-        .prompt({
-            name: 'employeesByDeptartment',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.employeesByDeptartment === '') {
-
-            } else if (answer.employeesByDeptartment === '') {
-
-            } else {
-                connection.end();
-            }
-        })
+    let query = '';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('Employee by Departments:', res);
+        inquirer
+            .prompt({
+                name: 'employeesByDeptartment',
+                type: 'confirm',
+                message: 'Press confirm to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.employeesByDeptartment) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    });
 };
 const employeesByManager = () => {
+    let query = '';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('Employees by Manager:', res);
+        inquirer
+            .prompt({
+                name: 'employeesByManager',
+                type: 'confirm',
+                message: 'Press confirm to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.employeesByManager) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    });
+};
+const addEmployeeFirstName = () => {
     inquirer
         .prompt({
-            name: 'employeesByManager',
-            type: 'list',
-            message: '',
-            choices: [],
+            name: 'addEmployeeFirstName',
+            type: 'input',
+            message: 'What is the first name of the employee?',
         })
         .then((answer) => {
-            if (answer.employeesByManager === '') {
-
-            } else if (answer.employeesByManager === '') {
+            if (answer.addEmployee === '') {
+                addEmployeeLastName()
+            } else if (answer.addEmployee === '') {
 
             } else {
                 connection.end();
             }
         })
 };
-const addEmployee = () => {
+const addEmployeeLastName = () => {
     inquirer
         .prompt({
-            name: 'addEmployee',
-            type: 'list',
-            message: '',
-            choices: [],
+            name: 'addEmployeeLastName',
+            type: 'input',
+            message: 'What is the last name of the employee?',
         })
         .then((answer) => {
             if (answer.addEmployee === '') {
@@ -174,24 +216,6 @@ const updateEmployeeManager = () => {
             choices: [],
         })
         .then((answer) => {
-            if (answer.updateEmployeeManager === '') {
-
-            } else if (answer.updateEmployeeManager === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
-const updateEmployeeManager = () => {
-    inquirer
-        .prompt({
-            name: 'updateEmployeeManager',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
             if (answer.employeeRole === '') {
 
             } else if (answer.employeeRole === '') {
@@ -202,22 +226,24 @@ const updateEmployeeManager = () => {
         })
 };
 const viewRoles = () => {
-    inquirer
-        .prompt({
-            name: 'viewRoles',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.employeeRole === '') {
-
-            } else if (answer.employeeRole === '') {
-
-            } else {
-                connection.end();
-            }
-        })
+    let query = '';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('View Roles:', res);
+        inquirer
+            .prompt({
+                name: 'viewRoles',
+                type: 'confirm',
+                message: 'Would you like to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.viewRoles) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    })
 };
 const addRole = () => {
     inquirer
@@ -255,23 +281,80 @@ const removeRole = () => {
             }
         })
 };
-const viewDepartments = () => {
+const viewManagers = () => {
+    let query = '';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('View managers:', res);
+        inquirer
+            .prompt({
+                name: 'viewManagers',
+                type: 'confirm',
+                message: 'Would you like to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.viewManagers) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    })
+};
+const addManager = () => {
     inquirer
         .prompt({
-            name: 'viewDepartment',
-            type: 'list',
-            message: '',
-            choices: [],
+            name: 'addManager',
+            type: 'input',
+            message: 'Please input the Manager that you would like to add.'
         })
         .then((answer) => {
-            if (answer.viewDepartments === '') {
+            if (answer.addManager === '') {
 
-            } else if (answer.viewDepartments === '') {
+            } else if (answer.addManager === '') {
 
             } else {
                 connection.end();
             }
         })
+};
+const removeManager = () => {
+    inquirer
+        .prompt({
+            name: 'removeManager',
+            type: 'list',
+            message: 'Which manager would you like to remove?',
+            choices: ['Accounting', 'Sales', 'Legal'],
+        })
+        .then((answer) => {
+            if (answer.removeManager === '') {
+
+            } else if (answer.removeManager === '') {
+
+            } else {
+                connection.end();
+            }
+        })
+};
+const viewDepartments = () => {
+    let query = 'SELECT * FROM departments';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table('View Departments:', res);
+        inquirer
+            .prompt({
+                name: 'viewDepartments',
+                type: 'confirm',
+                message: 'Would you like to return to the main menu.',
+            })
+            .then((answer) => {
+                if (answer.viewDepartments) {
+                    start();
+                } else {
+                    connection.end();
+                }
+            })
+    })
 };
 const addDepartment = () => {
     inquirer
@@ -309,32 +392,14 @@ const removeDepartment = () => {
         })
 };
 
-// const placeholder = () => {
-//     inquirer
-//         .prompt({
-//             name: 'placeholder',
-//             type: 'list',
-//             message: 'placeholder?',
-//             choices: ['placeholder', 'placeholder', 'placeholder'],
-//         })
-//         .then(() => {
 
-//         })
-//         .then(() => {
+start();
 
-
-
-//         });
-// }
-
-
-    // ----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------
 
 // add/remove roles or employees from tables based on responses
 
-    // INSERT INTO employees(first_name, last_name) values('Jon', 'Snow')
+// INSERT INTO employees(first_name, last_name) values('Jon', 'Snow')
 
-    // DELETE FROM employees
-    // WHERE id = 4
-
-//
+// DELETE FROM employees
+// WHERE id = 

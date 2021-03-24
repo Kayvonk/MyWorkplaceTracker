@@ -3,11 +3,11 @@ USE employees_db;
 
 /* Insert 3 Rows into your new table */
 INSERT INTO departments (department_name)
-VALUES ("Accounting"), ("Sales"), ("Legal");
+VALUES ("Accounting"), ("Sales"), ("Legal"), ("Software Development");
 
 INSERT INTO roles (title, salary, department_id)
-VALUES ("Sales Lead", 200, 1), ("Sales Person", 400, 2), ("Lead Engineer", 500, 3);
+VALUES ("Manager", 10000, 1), ("Manager", 20000, 2), ("Manager", 30000, 3), ("Manager", 40000, 4), ("Accountant", 20000, 1), ("Sales Lead", 25000, 2), ("Sales Person", 22000, 2), ("Attorney", 40000, 3), ("Junior Developer", 100, 4), ("Lead Engineer", 500, 4);
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
-VALUES ("Joe", "Shmoe", 7, 8), ("Cindy", "Lu", 5, 6), ("Boop", "Beep", 3, 4);
+VALUES ("Joe", "Shmoe", 5, 2), ("Cindy", "Lu", 1, null),  ("Jon", "Snow", 6, 4), ("Boop", "Beep", 2, null ), ("Joseph", "Joestar", 8, 6 ), ("Dio", "Brando", 3, null ), ("Rei", "Ayanami", 9, 8 ), ("Shinji", "Ikari", 9, 9 ), ("Asuka", "Langley", 4 , null );
 
