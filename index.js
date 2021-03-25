@@ -10,46 +10,21 @@ const connection = mysql.createConnection({
     database: 'employees_db',
 });
 
-let employeeArr = [1];
-let departmentArr = [2];
-let roleArr = [3];
-let managerArr = [4];
-
-function Row(id, name, title, department, manager) {
-    this.id = id;
-    this.name = name;
-    this.title = title;
-    this.department = department;
-    this.manager = manager;
-}
-
-let test = new Row(employeeArr, roleArr, departmentArr, managerArr);
-
-console.table(test);
-
-
-
-
-
-
-
 const start = () => {
     inquirer
         .prompt({
             name: 'start',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View all employees', 'View all employees by department', 'View all employees by Manager', 'Add employee', 'Remove employee', 'View roles', 'Add role', 'Remove role', 'View managers', 'Add manager', 'Remove manager', 'View departments', 'Add department', 'Remove department', 'Update employee role', 'Update employee manager'],
+            choices: ['View all employees', 'View all employees by department', 'Add employee', 'Remove employee', 'View roles', 'Add role', 'Remove role', 'View managers', 'Add manager', 'Remove manager', 'View departments', 'Add department', 'Remove department', 'Update employee role', 'Update employee manager'],
         })
         .then((answer) => {
             if (answer.start === 'View all employees') {
                 viewAllEmployees();
             } else if (answer.start === 'View all employees by department') {
                 employeesByDeptartment();
-            } else if (answer.start === 'View all employees by Manager') {
-                employeesByManager();
             } else if (answer.start === 'Add employee') {
-                addEmployeeFirstName();
+                addEmployee();
             } else if (answer.start === 'Remove employee') {
                 removeEmployee();
             } else if (answer.start === 'Update employee role') {
@@ -120,60 +95,63 @@ const employeesByDeptartment = () => {
             })
     });
 };
-const employeesByManager = () => {
-    let query = 'SELECT employees.manager_id, departments.department_name, employees.first_name, employees.last_name FROM employees INNER JOIN roles ON employees.manager_id = roles.id INNER JOIN departments ON roles.department_id = departments.id';
-    connection.query(query, function (err, res) {
+
+function addEmployee() {
+    connection.query('SELECT * FROM roles', function (err, res) {
         if (err) throw err;
-        console.table('Employees by Manager:', res);
         inquirer
-            .prompt({
-                name: 'employeesByManager',
-                type: 'confirm',
-                message: 'Press confirm to return to the main menu.',
-            })
-            .then((answer) => {
-                if (answer.employeesByManager) {
-                    start();
-                } else {
-                    connection.end();
+            .prompt([
+                {
+                    name: 'first_name',
+                    type: 'input',
+                    message: "What is the first name of the employee? ",
+                },
+                {
+                    name: 'last_name',
+                    type: 'input',
+                    message: "What is the last name of the employee? "
+                },
+                {
+                    name: 'manager_id',
+                    type: 'input',
+                    message: "What is the manager ID for the employee?"
+                },
+                {
+                    name: 'addRole',
+                    type: 'list',
+                    choices: function () {
+                        var roleArr = [];
+                        for (let i = 0; i < res.length; i++) {
+                            roleArr.push(res[i].title);
+                        }
+                        return roleArr;
+                    },
+                    message: "What is the role of the employee?"
                 }
+            ]).then(function (answer) {
+                let role_id;
+                for (let a = 0; a < res.length; a++) {
+                    if (res[a].title == answer.addRole) {
+                        role_id = res[a].id;
+                    }
+                }
+                connection.query(
+                    'INSERT INTO employees SET ?',
+                    {
+                        first_name: answer.first_name,
+                        last_name: answer.last_name,
+                        manager_id: answer.manager_id,
+                        role_id: role_id,
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        start()
+                    })
             })
-    });
+    })
 };
-const addEmployeeFirstName = () => {
-    inquirer
-        .prompt({
-            name: 'addEmployeeFirstName',
-            type: 'input',
-            message: 'What is the first name of the employee?',
-        })
-        .then((answer) => {
-            if (answer.addEmployee === '') {
-                addEmployeeLastName()
-            } else if (answer.addEmployee === '') {
 
-            } else {
-                connection.end();
-            }
-        })
-};
-const addEmployeeLastName = () => {
-    inquirer
-        .prompt({
-            name: 'addEmployeeLastName',
-            type: 'input',
-            message: 'What is the last name of the employee?',
-        })
-        .then((answer) => {
-            if (answer.addEmployee === '') {
 
-            } else if (answer.addEmployee === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
 const removeEmployee = () => {
     inquirer
         .prompt({
