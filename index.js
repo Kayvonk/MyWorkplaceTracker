@@ -30,6 +30,9 @@ console.table(test);
 
 
 
+
+
+
 const start = () => {
     inquirer
         .prompt({
@@ -78,7 +81,7 @@ const start = () => {
 };
 
 const viewAllEmployees = () => {
-    let query = '';
+    let query = 'SELECT first_name, last_name FROM employees ORDER BY last_name';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('All Employees:', res);
@@ -98,7 +101,7 @@ const viewAllEmployees = () => {
     });
 }
 const employeesByDeptartment = () => {
-    let query = '';
+    let query = 'SELECT departments.department_name, roles.title, employees.first_name, employees.last_name FROM departments RIGHT JOIN roles ON roles.department_id = departments.id INNER JOIN employees ON roles.id = employees.role_id ORDER BY department_name ';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('Employee by Departments:', res);
@@ -118,7 +121,7 @@ const employeesByDeptartment = () => {
     });
 };
 const employeesByManager = () => {
-    let query = '';
+    let query = 'SELECT employees.manager_id, departments.department_name, employees.first_name, employees.last_name FROM employees INNER JOIN roles ON employees.manager_id = roles.id INNER JOIN departments ON roles.department_id = departments.id';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('Employees by Manager:', res);
@@ -226,7 +229,7 @@ const updateEmployeeManager = () => {
         })
 };
 const viewRoles = () => {
-    let query = '';
+    let query = 'SELECT DISTINCT title FROM roles';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View Roles:', res);
@@ -282,7 +285,7 @@ const removeRole = () => {
         })
 };
 const viewManagers = () => {
-    let query = '';
+    let query = "SELECT DISTINCT departments.department_name, roles.department_id, employees.first_name, employees.last_name FROM departments RIGHT JOIN roles ON departments.id = roles.department_id INNER JOIN employees On departments.id= employees.role_id where employees.manager_id IS NULL";
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View managers:', res);
@@ -392,14 +395,12 @@ const removeDepartment = () => {
         })
 };
 
-
 start();
-
-// --------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // add/remove roles or employees from tables based on responses
 
 // INSERT INTO employees(first_name, last_name) values('Jon', 'Snow')
 
 // DELETE FROM employees
-// WHERE id = 
+// WHERE id = 4
