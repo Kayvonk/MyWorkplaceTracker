@@ -39,9 +39,9 @@ const start = () => {
                 removeRole();
             } else if (answer.start === 'View managers') {
                 viewManagers();
-            } else if (answer.start === 'Add managers') {
+            } else if (answer.start === 'Add manager') {
                 addManager();
-            } else if (answer.start === 'Remove managers') {
+            } else if (answer.start === 'Remove manager') {
                 removeManager();
             } else if (answer.start === 'View departments') {
                 viewDepartments();
@@ -56,7 +56,7 @@ const start = () => {
 };
 
 const viewAllEmployees = () => {
-    let query = 'SELECT first_name, last_name FROM employees ORDER BY last_name';
+    let query = 'SELECT first_name, last_name, id FROM employees ORDER BY last_name';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('All Employees:', res);
@@ -151,43 +151,62 @@ function addEmployee() {
     })
 };
 
-
 const removeEmployee = () => {
-    inquirer
-        .prompt({
+    inquirer.prompt([
+        {
             name: 'removeEmployee',
-            type: 'list',
-            message: '',
-            choices: [],
+            type: 'input',
+            message: 'What is the employee id of the employee you would like to remove?',
+        },
+    ])
+        .then(function (answer) {
+            connection.query('DELETE FROM employees WHERE ?', { id: answer.removeEmployee },
+                function (err) {
+                    if (err) throw err
+                    start();
+                }
+            )
         })
-        .then((answer) => {
-            if (answer.removeEmployee === '') {
+}
 
-            } else if (answer.removeEmployee === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
 const updateEmployeeRole = () => {
-    inquirer
-        .prompt({
-            name: 'updateEmployeeRole',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.updateEmployeeRole === '') {
-
-            } else if (answer.updateEmployeeRole === '') {
-
-            } else {
-                connection.end();
+    let query = 'SELECT CONCAT (first_name," ", last_name) AS full_name FROM employees ORDER BY last_name';
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                name: 'updateEmployeeRole',
+                type: 'input',
+                message: 'What is the employee id of the employee you would like to update?',
+            },
+            {
+                name: "updatedRole",
+                type: "list",
+                message: "What the updated role for this employee?",
+                choices: function () {
+                    var roleArr = [];
+                    connection.query("SELECT * FROM roles", function (err, res) {
+                        if (err) throw err
+                        for (var i = 0; i < res.length; i++) {
+                            roleArr.push(res[i].title);
+                        }
+                    })
+                    return roleArr;
+                }
             }
+
+        ]).then(function (answer) {
+            connection.query('UPDATE FROM employees SET WHERE ?', { id: answer.updateEmployeeRole }, { title: answer.updatedRole },
+                function (err) {
+                    if (err) throw err
+                    start();
+                }
+            )
         })
-};
+    })
+}
+
+
 const updateEmployeeManager = () => {
     inquirer
         .prompt({
@@ -226,44 +245,64 @@ const viewRoles = () => {
             })
     })
 };
+
 const addRole = () => {
     inquirer
-        .prompt({
-            name: 'addRole',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.employeeRole === '') {
+        .prompt([
+            {
+                name: 'addRole',
+                type: 'input',
+                message: 'What is the name of the new role?',
+            },
+            {
+                name: 'addSalary',
+                type: 'input',
+                message: 'What is the salary for this role?',
+            },
+        ])
+        .then(function (answer) {
+            connection.query("INSERT INTO roles SET ?",
+                {
+                    title: answer.addRole,
+                    salary: answer.addSalary,
+                },
+                function (err) {
+                    if (err) throw err
+                    start();
+                }
+            )
 
-            } else if (answer.employeeRole === '') {
+        });
+}
 
-            } else {
-                connection.end();
-            }
-        })
-};
 const removeRole = () => {
-    inquirer
-        .prompt({
+    connection.query('SELECT * FROM roles', function (err, res) {
+        if (err) throw err;
+        inquirer.prompt({
             name: 'removeRole',
             type: 'list',
-            message: '',
-            choices: [],
+            message: 'Which role would you like to remove?',
+            choices: function () {
+                let roleArr = [];
+                for (var i = 0; i < res.length; i++) {
+                    roleArr.push(res[i].title);
+                }
+                return roleArr;
+            },
         })
-        .then((answer) => {
-            if (answer.removeRole === '') {
+            .then(function (answer) {
+                connection.query('DELETE FROM roles WHERE ?', { title: answer.removeRole },
+                    function (err) {
+                        if (err) throw err
+                        start();
+                    }
+                )
+            })
+    })
+}
 
-            } else if (answer.removeRole === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
 const viewManagers = () => {
-    let query = "SELECT DISTINCT departments.department_name, roles.department_id, employees.first_name, employees.last_name FROM departments RIGHT JOIN roles ON departments.id = roles.department_id INNER JOIN employees On departments.id= employees.role_id where employees.manager_id IS NULL";
+    let query = "SELECT employees.id, employees.first_name, employees.last_name FROM  employees where employees.manager_id = '' OR employees.manager_id IS NULL";
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View managers:', res);
@@ -283,40 +322,51 @@ const viewManagers = () => {
     })
 };
 const addManager = () => {
-    inquirer
-        .prompt({
-            name: 'addManager',
+    inquirer.prompt([
+        {
+            name: 'managerFirst_name',
             type: 'input',
-            message: 'Please input the Manager that you would like to add.'
-        })
-        .then((answer) => {
-            if (answer.addManager === '') {
+            message: 'What is the first name of the manager?'
+        },
+        {
+            name: 'managerLast_name',
+            type: 'input',
+            message: 'What is the last name of the manager?'
+        }
+    ]).then(function (answer) {
+        connection.query('INSERT INTO employees SET ?',
+            {
+                first_name: answer.managerFirst_name,
+                last_name: answer.managerLast_name,
+                manager_id: null,
+                role_id: 1,
+            },
+            function (err) {
+                if (err) throw err;
+                start()
+            })
+    })
 
-            } else if (answer.addManager === '') {
+}
 
-            } else {
-                connection.end();
-            }
-        })
-};
 const removeManager = () => {
-    inquirer
-        .prompt({
+    inquirer.prompt([
+        {
             name: 'removeManager',
-            type: 'list',
-            message: 'Which manager would you like to remove?',
-            choices: ['Accounting', 'Sales', 'Legal'],
+            type: 'input',
+            message: 'What is the employee id of the manager you would like to remove?',
+        },
+    ])
+        .then(function (answer) {
+            connection.query('DELETE FROM employees WHERE ?', { id: answer.removeManager },
+                function (err) {
+                    if (err) throw err
+                    start();
+                }
+            )
         })
-        .then((answer) => {
-            if (answer.removeManager === '') {
+}
 
-            } else if (answer.removeManager === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
 const viewDepartments = () => {
     let query = 'SELECT * FROM departments';
     connection.query(query, function (err, res) {
@@ -345,40 +395,46 @@ const addDepartment = () => {
             message: 'Please input the department that you would like to add.'
         })
         .then((answer) => {
-            if (answer.addDepartment === '') {
-
-            } else if (answer.addDepartment === '') {
-
-            } else {
-                connection.end();
-            }
+            connection.query(
+                'INSERT INTO departments SET ?',
+                {
+                    department_name: answer.addDepartment,
+                },
+                function (err) {
+                    if (err) throw err;
+                    start()
+                })
         })
 };
+
+
 const removeDepartment = () => {
-    inquirer
-        .prompt({
+    connection.query('SELECT * FROM departments', function (err, res) {
+        if (err) throw err;
+        inquirer.prompt({
             name: 'removeDepartment',
             type: 'list',
             message: 'Which department would you like to remove?',
-            choices: ['Accounting', 'Sales', 'Legal'],
+            choices: function () {
+                let departmentArr = [];
+                for (var i = 0; i < res.length; i++) {
+                    departmentArr.push(res[i].department_name);
+                }
+                return departmentArr;
+            },
         })
-        .then((answer) => {
-            if (answer.removeDepartment === '') {
+            .then(function (answer) {
+                connection.query('DELETE FROM departments WHERE ?', { department_name: answer.removeDepartment },
+                    function (err) {
+                        if (err) throw err
+                        start();
+                    }
+                )
+            })
+    })
+}
 
-            } else if (answer.removeDepartment === '') {
-
-            } else {
-                connection.end();
-            }
-        })
-};
 
 start();
-// ----------------------------------------------------------------------------------------------------------------------
 
-// add/remove roles or employees from tables based on responses
 
-// INSERT INTO employees(first_name, last_name) values('Jon', 'Snow')
-
-// DELETE FROM employees
-// WHERE id = 4
