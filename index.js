@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: '',
+    password: 'password',
     database: 'employees_db',
 });
 
@@ -170,12 +170,10 @@ const removeEmployee = () => {
 }
 
 const updateEmployeeRole = () => {
-    let query = 'SELECT CONCAT (first_name," ", last_name) AS full_name FROM employees ORDER BY last_name';
-    connection.query(query, function (err, res) {
-        if (err) throw err;
+    connection.query("SELECT * FROM roles", function (err, res) {
         inquirer.prompt([
             {
-                name: 'updateEmployeeRole',
+                name: 'employeeID',
                 type: 'input',
                 message: 'What is the employee id of the employee you would like to update?',
             },
@@ -184,19 +182,33 @@ const updateEmployeeRole = () => {
                 type: "list",
                 message: "What the updated role for this employee?",
                 choices: function () {
-                    var roleArr = [];
-                    connection.query("SELECT * FROM roles", function (err, res) {
-                        if (err) throw err
-                        for (var i = 0; i < res.length; i++) {
-                            roleArr.push(res[i].title);
-                        }
-                    })
-                    return roleArr;
+                    // var roleArr = [];
+
+                    if (err) throw err
+                    // for (var i = 0; i < res.length; i++) {
+                    //     roleArr.push(res[i].title);
+                    // }
+
+                    // return roleArr;
+
+                    return res.map(role => ({ name: role.title, value: role.id }))
                 }
+
             }
 
         ]).then(function (answer) {
-            connection.query('UPDATE FROM employees SET WHERE ?', { id: answer.updateEmployeeRole }, { title: answer.updatedRole },
+
+
+            // let roleId;
+            // for (let a = 0; a < res.length; a++) {
+            //     if (res[a].title == answer.updatedRole) {
+            //         roleId = res[a].id;
+            //     }
+            // }
+            // let roleId = res.find(role => role.title === answer.updatedRole)?.id
+
+            console.log(answer.updatedRole)
+            connection.query('UPDATE employees SET ? WHERE ?', [{ role_id: answer.updatedRole }, { id: answer.employeeID }],
                 function (err) {
                     if (err) throw err
                     start();
@@ -205,7 +217,6 @@ const updateEmployeeRole = () => {
         })
     })
 }
-
 
 const updateEmployeeManager = () => {
     inquirer
@@ -225,6 +236,7 @@ const updateEmployeeManager = () => {
             }
         })
 };
+
 const viewRoles = () => {
     let query = 'SELECT DISTINCT title FROM roles';
     connection.query(query, function (err, res) {
@@ -321,6 +333,7 @@ const viewManagers = () => {
             })
     })
 };
+
 const addManager = () => {
     inquirer.prompt([
         {
@@ -346,7 +359,6 @@ const addManager = () => {
                 start()
             })
     })
-
 }
 
 const removeManager = () => {
@@ -387,6 +399,7 @@ const viewDepartments = () => {
             })
     })
 };
+
 const addDepartment = () => {
     inquirer
         .prompt({
@@ -406,7 +419,6 @@ const addDepartment = () => {
                 })
         })
 };
-
 
 const removeDepartment = () => {
     connection.query('SELECT * FROM departments', function (err, res) {
@@ -436,5 +448,3 @@ const removeDepartment = () => {
 
 
 start();
-
-
