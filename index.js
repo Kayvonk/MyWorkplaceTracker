@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: 'password',
+    password: '',
     database: 'employees_db',
 });
 
@@ -52,7 +52,7 @@ const start = () => {
             } else {
                 connection.end();
             }
-        });
+        })
 };
 
 const viewAllEmployees = () => {
@@ -73,8 +73,9 @@ const viewAllEmployees = () => {
                     connection.end();
                 }
             })
-    });
-}
+    })
+};
+
 const employeesByDeptartment = () => {
     let query = 'SELECT departments.department_name, roles.title, employees.first_name, employees.last_name FROM departments RIGHT JOIN roles ON roles.department_id = departments.id INNER JOIN employees ON roles.id = employees.role_id ORDER BY department_name ';
     connection.query(query, function (err, res) {
@@ -93,7 +94,7 @@ const employeesByDeptartment = () => {
                     connection.end();
                 }
             })
-    });
+    })
 };
 
 function addEmployee() {
@@ -165,10 +166,10 @@ const removeEmployee = () => {
                 )
             })
     })
-}
+};
 
 const updateEmployeeRole = () => {
-    connection.query("SELECT * FROM roles", function (err, res) {
+    connection.query('SELECT * FROM roles', function (err, res) {
         inquirer.prompt([
             {
                 name: 'employeeID',
@@ -195,10 +196,10 @@ const updateEmployeeRole = () => {
             )
         })
     })
-}
+};
 
 const updateEmployeeManager = () => {
-    connection.query("SELECT * FROM employees where employees.manager_id = '' OR employees.manager_id IS NULL", function (err, res) {
+    connection.query('SELECT * FROM employees where employees.manager_id = "" OR employees.manager_id IS NULL', function (err, res) {
         inquirer.prompt([
             {
                 name: 'employeeID',
@@ -225,7 +226,7 @@ const updateEmployeeManager = () => {
             )
         })
     })
-}
+};
 
 const viewRoles = () => {
     let query = 'SELECT DISTINCT title, salary FROM roles';
@@ -263,7 +264,7 @@ const addRole = () => {
             },
         ])
         .then(function (answer) {
-            connection.query("INSERT INTO roles SET ?",
+            connection.query('INSERT INTO roles SET ?',
                 {
                     title: answer.addRole,
                     salary: answer.addSalary,
@@ -273,8 +274,8 @@ const addRole = () => {
                     start();
                 }
             )
-        });
-}
+        })
+};
 
 const removeRole = () => {
     connection.query('SELECT * FROM roles', function (err, res) {
@@ -297,10 +298,10 @@ const removeRole = () => {
                 )
             })
     })
-}
+};
 
 const viewManagers = () => {
-    let query = "SELECT employees.id, employees.first_name, employees.last_name FROM  employees where employees.manager_id = '' OR employees.manager_id IS NULL";
+    let query = 'SELECT employees.id, employees.first_name, employees.last_name FROM  employees where employees.manager_id = "" OR employees.manager_id IS NULL';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View managers:', res);
@@ -345,10 +346,10 @@ const addManager = () => {
                 start()
             })
     })
-}
+};
 
 const removeManager = () => {
-    let query = "SELECT id, CONCAT(employees.first_name, ' ', employees.last_name) AS full_name FROM  employees where employees.manager_id = '' OR employees.manager_id IS NULL";
+    let query = 'SELECT id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM  employees where employees.manager_id = "" OR employees.manager_id IS NULL';
     connection.query(query, function (err, res) {
         if (err) throw err;
         inquirer.prompt([
@@ -371,7 +372,7 @@ const removeManager = () => {
                 )
             })
     })
-}
+};
 
 const viewDepartments = () => {
     let query = 'SELECT * FROM departments';
@@ -434,6 +435,6 @@ const removeDepartment = () => {
                 )
             })
     })
-}
+};
 
 start();
