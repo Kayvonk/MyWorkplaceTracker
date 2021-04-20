@@ -142,21 +142,29 @@ function addEmployee() {
 };
 
 const removeEmployee = () => {
-    inquirer.prompt([
-        {
-            name: 'removeEmployee',
-            type: 'input',
-            message: 'What is the employee id of the employee you would like to remove?',
-        },
-    ])
-        .then(function (answer) {
-            connection.query('DELETE FROM employees WHERE ?', { id: answer.removeEmployee },
-                function (err) {
+    connection.query('SELECT id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM employees WHERE employees.manager_id != "" OR employees.manager_id IS NOT NULL ORDER BY last_name', function (err, res) {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                name: 'removeEmployee',
+                type: "list",
+                message: "What the name of the employee you would like to remove?",
+                choices: function () {
                     if (err) throw err
-                    start();
+                    return res.map(employee => ({ name: employee.full_name, value: employee.id }))
                 }
-            )
-        })
+
+            },
+        ])
+            .then(function (answer) {
+                connection.query('DELETE FROM employees WHERE ?', { id: answer.removeEmployee },
+                    function (err) {
+                        if (err) throw err
+                        start();
+                    }
+                )
+            })
+    })
 }
 
 const updateEmployeeRole = () => {
@@ -343,21 +351,29 @@ const addManager = () => {
 }
 
 const removeManager = () => {
-    inquirer.prompt([
-        {
-            name: 'removeManager',
-            type: 'input',
-            message: 'What is the employee id of the manager you would like to remove?',
-        },
-    ])
-        .then(function (answer) {
-            connection.query('DELETE FROM employees WHERE ?', { id: answer.removeManager },
-                function (err) {
+    let query = "SELECT id, CONCAT(employees.first_name, ' ', employees.last_name) AS full_name FROM  employees where employees.manager_id = '' OR employees.manager_id IS NULL";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                name: 'removeManager',
+                type: 'list',
+                message: 'What is the name of the manager you would like to remove?',
+                choices: function () {
                     if (err) throw err
-                    start();
+                    return res.map(manager => ({ name: manager.full_name, value: manager.id }))
                 }
-            )
-        })
+            },
+        ])
+            .then(function (answer) {
+                connection.query('DELETE FROM employees WHERE ?', { id: answer.removeManager },
+                    function (err) {
+                        if (err) throw err
+                        start();
+                    }
+                )
+            })
+    })
 }
 
 const viewDepartments = () => {
