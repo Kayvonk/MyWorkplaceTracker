@@ -228,7 +228,7 @@ const updateEmployeeManager = () => {
 }
 
 const viewRoles = () => {
-    let query = 'SELECT DISTINCT title FROM roles';
+    let query = 'SELECT DISTINCT title, salary FROM roles';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View Roles:', res);
@@ -284,15 +284,12 @@ const removeRole = () => {
             type: 'list',
             message: 'Which role would you like to remove?',
             choices: function () {
-                let roleArr = [];
-                for (var i = 0; i < res.length; i++) {
-                    roleArr.push(res[i].title);
-                }
-                return roleArr;
+                return res.map(role => ({ name: role.title, value: role.id }))
             },
+
         })
             .then(function (answer) {
-                connection.query('DELETE FROM roles WHERE ?', { title: answer.removeRole },
+                connection.query('DELETE FROM roles WHERE ?', { id: answer.removeRole },
                     function (err) {
                         if (err) throw err
                         start();
@@ -425,15 +422,11 @@ const removeDepartment = () => {
             type: 'list',
             message: 'Which department would you like to remove?',
             choices: function () {
-                let departmentArr = [];
-                for (var i = 0; i < res.length; i++) {
-                    departmentArr.push(res[i].department_name);
-                }
-                return departmentArr;
-            },
+                return res.map(department => ({ name: department.department_name, value: department.id }))
+            }
         })
             .then(function (answer) {
-                connection.query('DELETE FROM departments WHERE ?', { department_name: answer.removeDepartment },
+                connection.query('DELETE FROM departments WHERE ?', { id: answer.removeDepartment },
                     function (err) {
                         if (err) throw err
                         start();
