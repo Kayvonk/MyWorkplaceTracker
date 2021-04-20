@@ -56,7 +56,7 @@ const start = () => {
 };
 
 const viewAllEmployees = () => {
-    let query = 'SELECT first_name, last_name, id FROM employees ORDER BY last_name';
+    let query = 'SELECT first_name, last_name, id, manager_id FROM employees ORDER BY last_name';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('All Employees:', res);
@@ -120,28 +120,18 @@ function addEmployee() {
                     name: 'addRole',
                     type: 'list',
                     choices: function () {
-                        var roleArr = [];
-                        for (let i = 0; i < res.length; i++) {
-                            roleArr.push(res[i].title);
-                        }
-                        return roleArr;
+                        return res.map(role => ({ name: role.title, value: role.id }))
                     },
                     message: "What is the role of the employee?"
                 }
             ]).then(function (answer) {
-                let role_id;
-                for (let a = 0; a < res.length; a++) {
-                    if (res[a].title == answer.addRole) {
-                        role_id = res[a].id;
-                    }
-                }
                 connection.query(
                     'INSERT INTO employees SET ?',
                     {
                         first_name: answer.first_name,
                         last_name: answer.last_name,
                         manager_id: answer.manager_id,
-                        role_id: role_id,
+                        role_id: answer.addRole,
                     },
                     function (err) {
                         if (err) throw err;
@@ -182,31 +172,12 @@ const updateEmployeeRole = () => {
                 type: "list",
                 message: "What the updated role for this employee?",
                 choices: function () {
-                    // var roleArr = [];
-
                     if (err) throw err
-                    // for (var i = 0; i < res.length; i++) {
-                    //     roleArr.push(res[i].title);
-                    // }
-
-                    // return roleArr;
-
                     return res.map(role => ({ name: role.title, value: role.id }))
                 }
 
             }
-
         ]).then(function (answer) {
-
-
-            // let roleId;
-            // for (let a = 0; a < res.length; a++) {
-            //     if (res[a].title == answer.updatedRole) {
-            //         roleId = res[a].id;
-            //     }
-            // }
-            // let roleId = res.find(role => role.title === answer.updatedRole)?.id
-
             console.log(answer.updatedRole)
             connection.query('UPDATE employees SET ? WHERE ?', [{ role_id: answer.updatedRole }, { id: answer.employeeID }],
                 function (err) {
@@ -219,23 +190,34 @@ const updateEmployeeRole = () => {
 }
 
 const updateEmployeeManager = () => {
-    inquirer
-        .prompt({
-            name: 'updateEmployeeManager',
-            type: 'list',
-            message: '',
-            choices: [],
-        })
-        .then((answer) => {
-            if (answer.employeeRole === '') {
-
-            } else if (answer.employeeRole === '') {
-
-            } else {
-                connection.end();
+    connection.query("SELECT * FROM employees where employees.manager_id = '' OR employees.manager_id IS NULL", function (err, res) {
+        inquirer.prompt([
+            {
+                name: 'employeeID',
+                type: 'input',
+                message: 'What is the employee id of the employee you would like to update?',
+            },
+            {
+                name: "updatedManager",
+                type: "list",
+                message: "What the updated manager's last name?",
+                choices: function () {
+                    if (err) throw err
+                    return res.map(employee => ({ name: employee.last_name, value: employee.id }))
+                }
             }
+
+        ]).then(function (answer) {
+            console.log(answer.updatedManager)
+            connection.query('UPDATE employees SET ? WHERE ?', [{ manager_id: answer.updatedManager }, { id: answer.employeeID }],
+                function (err) {
+                    if (err) throw err
+                    start();
+                }
+            )
         })
-};
+    })
+}
 
 const viewRoles = () => {
     let query = 'SELECT DISTINCT title FROM roles';
@@ -283,7 +265,6 @@ const addRole = () => {
                     start();
                 }
             )
-
         });
 }
 
@@ -445,6 +426,5 @@ const removeDepartment = () => {
             })
     })
 }
-
 
 start();
