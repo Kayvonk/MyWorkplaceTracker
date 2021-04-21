@@ -20,6 +20,8 @@ To utilize this application, connect to your MySQL database by adding your passw
 
 ![workplaceTrackerThumbnail](./assets/workplaceTrackerThumbnail.PNG)
 
+A detailed video walkthrough can be found in the main directory of this repository.
+
 ## License
 This project is licensed with MIT.
 
