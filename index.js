@@ -143,7 +143,7 @@ function addEmployee() {
 };
 
 const removeEmployee = () => {
-    connection.query('SELECT id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM employees WHERE employees.manager_id != "" OR employees.manager_id IS NOT NULL ORDER BY last_name', function (err, res) {
+    connection.query('SELECT role_id, id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM employees WHERE employees.role_id != 1 ORDER BY last_name', function (err, res) {
         if (err) throw err;
         inquirer.prompt([
             {
@@ -199,20 +199,24 @@ const updateEmployeeRole = () => {
 };
 
 const updateEmployeeManager = () => {
-    connection.query('SELECT * FROM employees where employees.manager_id = "" OR employees.manager_id IS NULL', function (err, res) {
+    connection.query('SELECT role_id, id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM employees', function (err, res) {
         inquirer.prompt([
             {
                 name: 'employeeID',
-                type: 'input',
-                message: 'What is the employee id of the employee you would like to update?',
+                type: 'list',
+                message: 'Who is the employee you would like to update?',
+                choices: function () {
+                    if (err) throw err
+                    return res.map(employee => ({ name: employee.full_name, value: employee.id }))
+                }
             },
             {
                 name: "updatedManager",
                 type: "list",
-                message: "What the updated manager's last name?",
+                message: "Who is the updated manager?",
                 choices: function () {
                     if (err) throw err
-                    return res.map(employee => ({ name: employee.last_name, value: employee.id }))
+                    return res.filter(employee => employee.role_id === 1).map(employee => ({ name: employee.full_name, value: employee.id }))
                 }
             }
 
@@ -301,7 +305,7 @@ const removeRole = () => {
 };
 
 const viewManagers = () => {
-    let query = 'SELECT employees.id, employees.first_name, employees.last_name FROM  employees where employees.manager_id = "" OR employees.manager_id IS NULL';
+    let query = 'SELECT employees.id, employees.first_name, employees.last_name FROM  employees where employees.role_id = 1';
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table('View managers:', res);
@@ -349,7 +353,7 @@ const addManager = () => {
 };
 
 const removeManager = () => {
-    let query = 'SELECT id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM  employees where employees.manager_id = "" OR employees.manager_id IS NULL';
+    let query = 'SELECT id, CONCAT(employees.first_name, " ", employees.last_name) AS full_name FROM  employees where employees.role_id = 1';
     connection.query(query, function (err, res) {
         if (err) throw err;
         inquirer.prompt([
